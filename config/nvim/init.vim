@@ -19,6 +19,8 @@ Plug 'rust-lang/rust.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'flazz/vim-colorschemes'
+Plug 'tjdevries/colorbuddy.vim', { 'branch': 'dev' }
+Plug 'tjdevries/gruvbuddy.nvim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'w0rp/ale'
 Plug 'sheerun/vim-polyglot'
@@ -54,6 +56,14 @@ Plug 'chr4/nginx.vim'
 
 Plug 'williamboman/mason.nvim'
 Plug 'williamboman/mason-lspconfig.nvim'
+
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+
+Plug 'mfussenegger/nvim-jdtls'
+
+Plug 'eandrju/cellular-automaton.nvim'
+
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 " END PLUGINS
 call plug#end()
 
@@ -80,7 +90,8 @@ if exists('g:neovide')
 end
 
 set termguicolors
-colorscheme gruvbox
+lua require('colorbuddy').colorscheme('gruvbox')
+hi Normal guibg=#202020 ctermbg=DarkGray
 
 
 " fix ale warnings
@@ -127,7 +138,7 @@ let g:autofmt_autosave = 1
 " ALE stuff
 let g:ale_lint_delay = 1000
 
-let g:ale_fixers = {'python': ['autopep8'], 'rust': ['rustfix'], 'javascript': ['eslint']}
+let g:ale_fixers = {'python': ['autopep8'], 'rust': ['rustfix'], 'javascript': ['eslint'], 'yaml': ['yamlfix']}
 
 let g:ale_linters = {'python': ['flake8'], 'rust': ['rls'], 'javascript': ['eslint']}
 " end ALE stuff
@@ -140,7 +151,14 @@ autocmd FileType python let b:dispatch = 'python -m unittest %'
 autocmd FileType java setlocal omnifunc=javacomplete#Complete
 " end vim-javacomplete2
 
+" markdown
+autocmd FileType markdown setlocal textwidth=80
+" end markdown
+
 " neovim-terminal
+nnoremap tt :vsplit term://bash<CR>
+nnoremap <M-t> :split term://bash<CR>
+
 augroup neovim_terminal
     autocmd!
     " Enter Terminal-mode (insert) automatically
@@ -347,5 +365,12 @@ nnoremap <silent> <M-n>n :NERDTreeFocus<CR>
 
 " Lua for LSP here
 set completeopt=menu,menuone,noselect
+
+function! SynStack()
+  if !exists("*synstack")
+    return
+  endif
+  echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunc
 
 :luafile ~/.config/nvim/extra.lua

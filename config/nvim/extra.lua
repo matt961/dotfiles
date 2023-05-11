@@ -117,14 +117,14 @@ local on_attach = function(client, bufnr)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.format({ async = true })<CR>', opts)
 end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
 
 -- Setup lspconfig.
-local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 
 local lspconfig = require('lspconfig')
@@ -134,7 +134,8 @@ mason_lspconfig.setup({
   automatic_installation = true
 })
 
-local servers = { "pyright", "rust_analyzer", "tsserver", "solargraph", "yamlls", "sumneko_lua", "ansiblels" }
+local servers = { "rust_analyzer", "tsserver", "solargraph", "terraformls", "omnisharp", "taplo", "jsonls", "jdtls",
+  "gradle_ls" }
 for _, lsp in pairs(servers) do
   lspconfig[lsp].setup {
     on_attach = on_attach,
@@ -146,7 +147,7 @@ for _, lsp in pairs(servers) do
   }
 end
 
-lspconfig.sumneko_lua.setup {
+lspconfig.lua_ls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
   settings = {
@@ -164,12 +165,55 @@ lspconfig.sumneko_lua.setup {
 lspconfig.yamlls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
+  filetypes = { "yaml", "!yaml.ansible" },
   settings = {
     yaml = {
       schemas = {
-        ["https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/main/service-schema.json"] = { "*-tmpl.yaml",
-          "*-tmpl.yml" },
+        ["https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/main/service-schema.json"] = {
+          "*-tmpl.yaml",
+          "azure-pipelines.yml"
+        },
       },
     },
+  }
+}
+
+lspconfig.pyright.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  root_dir = lspconfig.util.root_pattern('pyproject.toml', 'requirements.txt'),
+  settings = {
+    python = {
+      analysis = {
+        autoSearchPaths = true,
+        diagnosticMode = "workspace",
+        useLibraryCodeForTypes = true
+      }
+    }
+  }
+}
+
+lspconfig.ansiblels.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  settings = {
+    ansible = {
+      ansible = {
+        path = "ansible"
+      },
+      executionEnvironment = {
+        enabled = false
+      },
+      python = {
+        interpreterPath = "python"
+      },
+      validation = {
+        enabled = true,
+        lint = {
+          enabled = false,
+          path = "ansible-lint"
+        }
+      }
+    }
   }
 }
