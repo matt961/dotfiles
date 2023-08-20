@@ -21,6 +21,7 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'flazz/vim-colorschemes'
 Plug 'tjdevries/colorbuddy.vim', { 'branch': 'dev' }
 Plug 'tjdevries/gruvbuddy.nvim'
+Plug 'rebelot/kanagawa.nvim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'w0rp/ale'
 Plug 'sheerun/vim-polyglot'
@@ -90,8 +91,9 @@ if exists('g:neovide')
 end
 
 set termguicolors
-lua require('colorbuddy').colorscheme('gruvbox')
-hi Normal guibg=#202020 ctermbg=DarkGray
+lua require('colorbuddy').colorscheme('kanagawa')
+set background=dark
+" hi Normal guibg=#202020 ctermbg=DarkGray
 
 
 " fix ale warnings
