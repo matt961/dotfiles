@@ -147,6 +147,26 @@ for _, lsp in pairs(servers) do
   }
 end
 
+local root_files = {
+  '.vim/', -- Gradle (multi-project)
+}
+
+local fallback_root_files = {
+  'Gemfile', -- Gradle
+  '.git/', -- Gradle
+}
+local ruby_root_dir = function(fname)
+  local primary = lspconfig.util.root_pattern(unpack(root_files))(fname)
+  local fallback = lspconfig.util.root_pattern(unpack(fallback_root_files))(fname)
+  return primary or fallback
+end
+
+lspconfig.solargraph.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  root_dir = ruby_root_dir
+}
+
 lspconfig.lua_ls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
