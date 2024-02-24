@@ -126,62 +126,6 @@ function _normalize_markdown(contents, opts)
   return contents
 end
 
--- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
---   function(_, result, ctx, config)
---     config = config or {}
---     config.focus_id = ctx.method
---     if vim.api.nvim_get_current_buf() ~= ctx.bufnr then
---       -- Ignore result since buffer changed. This happens for slow language servers.
---       return
---     end
---     if not (result and result.contents) then
---       if config.silent ~= true then
---         vim.notify('No information available')
---       end
---       return
---     end
---     local format = 'markdown'
---     local contents ---@type string[]
---     if type(result.contents) == 'table' and result.contents.kind == 'plaintext' then
---       format = 'plaintext'
---       contents = vim.split(result.contents.value or '', '\n', { trimempty = true })
---     else
---       contents = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
---     end
---     if vim.tbl_isempty(contents) then
---       if config.silent ~= true then
---         vim.notify('No information available')
---       end
---       return
---     end
-
---     vim.cmd('split')
---     local win = vim.api.nvim_get_current_win()
---     vim.api.nvim_win_set_height(win, 20)
---     local bufnew = vim.api.nvim_create_buf(false, true)
-
---     if (bufnew == 0) then
---       vim.notify('Could not create hoverdoc window')
---       return
---     end
-
---     vim.bo[bufnew].filetype = 'markdown'
-
---     vim.api.nvim_win_set_buf(win, bufnew)
---     vim.api.nvim_buf_set_lines(bufnew, 0, -1, false, contents)
-
---     vim.api.nvim_buf_set_keymap(
---       bufnew,
---       'n',
---       'q',
---       '<cmd>bdelete<cr>',
---       { silent = true, noremap = true, nowait = true }
---     )
-
---     return bufnew, win
---   end, {}
--- )
-
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -206,7 +150,7 @@ local on_attach = function(client, bufnr)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.format({ async = true })<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
 end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
@@ -235,6 +179,26 @@ for _, lsp in pairs(servers) do
     }
   }
 end
+
+local root_files = {
+  '.vim/', -- Gradle (multi-project)
+}
+
+local fallback_root_files = {
+  'Gemfile', -- Gradle
+  '.git/', -- Gradle
+}
+local ruby_root_dir = function(fname)
+  local primary = lspconfig.util.root_pattern(unpack(root_files))(fname)
+  local fallback = lspconfig.util.root_pattern(unpack(fallback_root_files))(fname)
+  return primary or fallback
+end
+
+lspconfig.solargraph.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  root_dir = ruby_root_dir
+}
 
 lspconfig.lua_ls.setup {
   on_attach = on_attach,

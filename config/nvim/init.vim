@@ -75,8 +75,6 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 set termguicolors
 colorscheme kanagawa
 set background=dark
-" hi Normal guibg=#202020 ctermbg=DarkGray
-
 
 " fix ale warnings
 hi ALEWarning cterm=undercurl ctermbg=none
