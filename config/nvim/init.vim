@@ -13,34 +13,16 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'easymotion/vim-easymotion'
 Plug 'Raimondi/delimitMate'
-Plug 'pangloss/vim-javascript'
-Plug 'neoclide/vim-jsx-improve'
 Plug 'rust-lang/rust.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-Plug 'flazz/vim-colorschemes'
-Plug 'tjdevries/colorbuddy.vim', { 'branch': 'dev' }
-Plug 'tjdevries/gruvbuddy.nvim'
+Plug 'rebelot/kanagawa.nvim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'w0rp/ale'
 Plug 'sheerun/vim-polyglot'
-" Plug 'jremmen/vim-ripgrep'
 Plug 'preservim/nerdtree'
-" if has('nvim')
-" 	Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-" else
-" 	Plug 'Shougo/deoplete.nvim'
-" 	Plug 'roxma/nvim-yarp'
-" 	Plug 'roxma/vim-hug-neovim-rpc'
-" endif
-" Plug 'autozimu/LanguageClient-neovim', {
-"     \ 'branch': 'next',
-"     \ 'do': './install.sh',
-"     \ }
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-" LSP
-" Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
@@ -49,21 +31,16 @@ Plug 'hrsh7th/cmp-cmdline'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/vim-vsnip'
-
+Plug 'hrsh7th/vim-vsnip-integ'
 Plug 'yssl/QFEnter'
 Plug 'morhetz/gruvbox'
-Plug 'chr4/nginx.vim'
-
 Plug 'williamboman/mason.nvim'
 Plug 'williamboman/mason-lspconfig.nvim'
-
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
-
-Plug 'mfussenegger/nvim-jdtls'
-
-Plug 'eandrju/cellular-automaton.nvim'
-
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'b0o/schemastore.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.x' }
 " END PLUGINS
 call plug#end()
 
@@ -89,9 +66,16 @@ if exists('g:neovide')
   let g:neovide_refresh_rate=100
 end
 
+
+" Shows the highlight group of whatever's under the cursor
+map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+\ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+\ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+
 set termguicolors
-lua require('colorbuddy').colorscheme('gruvbox')
-hi Normal guibg=#202020 ctermbg=DarkGray
+colorscheme kanagawa
+set background=dark
+" hi Normal guibg=#202020 ctermbg=DarkGray
 
 
 " fix ale warnings
@@ -108,6 +92,8 @@ let g:airline_section_z = ""
 let g:airline_section_error = ""
 let g:airline_section_warning = ""
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
+let g:airline#extensions#fugitiveline#enabled = 1
+let g:airline#extensions#nvimlsp#enabled = 1
 " end airline
 
 set foldmethod=syntax
@@ -158,6 +144,7 @@ autocmd FileType markdown setlocal textwidth=80
 " neovim-terminal
 nnoremap tt :vsplit term://bash<CR>
 nnoremap <M-t> :split term://bash<CR>
+nnoremap <M-T> :tabnew term://bash<CR>
 
 augroup neovim_terminal
     autocmd!
@@ -372,5 +359,33 @@ function! SynStack()
   endif
   echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunc
+
+" NOTE: You can use other key to expand snippet.
+
+" Expand
+imap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
+smap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
+
+" Expand or jump
+imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
+
+" Jump forward or backward
+imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
+imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
+
+" Select or cut text to use as $TM_SELECTED_TEXT in the next snippet.
+" See https://github.com/hrsh7th/vim-vsnip/pull/50
+nmap        s   <Plug>(vsnip-select-text)
+xmap        s   <Plug>(vsnip-select-text)
+nmap        S   <Plug>(vsnip-cut-text)
+xmap        S   <Plug>(vsnip-cut-text)
+
+" If you want to use snippet for multiple filetypes, you can `g:vsnip_filetypes` for it.
+let g:vsnip_filetypes = {}
+let g:vsnip_filetypes.javascriptreact = ['javascript']
+let g:vsnip_filetypes.typescriptreact = ['typescript']
 
 :luafile ~/.config/nvim/extra.lua

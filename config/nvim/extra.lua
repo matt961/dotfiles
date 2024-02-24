@@ -2,10 +2,23 @@ local has_words_before = function()
   local line, col = unpack(vim.api.nvim_win_get_cursor(0))
   return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
 end
-
 local feedkey = function(key, mode)
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
 end
+
+if vim.fn.executable('rg') then
+  vim.g['grepprg'] = 'rg'
+end
+
+local builtin = require('telescope.builtin')
+vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
+vim.keymap.set('n', '<leader>gf', builtin.git_files, {})
+vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
+vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
+vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
+vim.keymap.set('n', '<leader>qf', builtin.quickfix, {})
+vim.keymap.set('n', '<leader>l', builtin.loclist, {})
+vim.keymap.set('n', '<leader>r', builtin.lsp_references, {})
 
 require("mason").setup()
 
@@ -93,6 +106,82 @@ vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', op
 vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
 vim.api.nvim_set_keymap('n', '<space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
 
+function _normalize_markdown(contents, opts)
+  validate({
+    contents = { contents, 't' },
+    opts = { opts, 't', true },
+  })
+  opts = opts or {}
+
+  -- 1. Carriage returns are removed
+  contents = vim.split(table.concat(contents, '\n'):gsub('\r', ''), '\n', { trimempty = true })
+
+  -- 2. Successive empty lines are collapsed into a single empty line
+  contents = collapse_blank_lines(contents)
+
+  -- 3. Thematic breaks are expanded to the given width
+  local divider = string.rep('─', opts.width or 80)
+  contents = replace_separators(contents, divider)
+
+  return contents
+end
+
+-- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+--   function(_, result, ctx, config)
+--     config = config or {}
+--     config.focus_id = ctx.method
+--     if vim.api.nvim_get_current_buf() ~= ctx.bufnr then
+--       -- Ignore result since buffer changed. This happens for slow language servers.
+--       return
+--     end
+--     if not (result and result.contents) then
+--       if config.silent ~= true then
+--         vim.notify('No information available')
+--       end
+--       return
+--     end
+--     local format = 'markdown'
+--     local contents ---@type string[]
+--     if type(result.contents) == 'table' and result.contents.kind == 'plaintext' then
+--       format = 'plaintext'
+--       contents = vim.split(result.contents.value or '', '\n', { trimempty = true })
+--     else
+--       contents = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
+--     end
+--     if vim.tbl_isempty(contents) then
+--       if config.silent ~= true then
+--         vim.notify('No information available')
+--       end
+--       return
+--     end
+
+--     vim.cmd('split')
+--     local win = vim.api.nvim_get_current_win()
+--     vim.api.nvim_win_set_height(win, 20)
+--     local bufnew = vim.api.nvim_create_buf(false, true)
+
+--     if (bufnew == 0) then
+--       vim.notify('Could not create hoverdoc window')
+--       return
+--     end
+
+--     vim.bo[bufnew].filetype = 'markdown'
+
+--     vim.api.nvim_win_set_buf(win, bufnew)
+--     vim.api.nvim_buf_set_lines(bufnew, 0, -1, false, contents)
+
+--     vim.api.nvim_buf_set_keymap(
+--       bufnew,
+--       'n',
+--       'q',
+--       '<cmd>bdelete<cr>',
+--       { silent = true, noremap = true, nowait = true }
+--     )
+
+--     return bufnew, win
+--   end, {}
+-- )
+
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -134,8 +223,8 @@ mason_lspconfig.setup({
   automatic_installation = true
 })
 
-local servers = { "rust_analyzer", "tsserver", "solargraph", "terraformls", "omnisharp", "taplo", "jsonls", "jdtls",
-  "gradle_ls" }
+local servers = { "rust_analyzer", "tsserver", "solargraph", "terraformls",
+  "omnisharp", "taplo", "jsonls", "jdtls", "gradle_ls", "volar", "cssls", "html", "tailwindcss" }
 for _, lsp in pairs(servers) do
   lspconfig[lsp].setup {
     on_attach = on_attach,
@@ -162,18 +251,21 @@ lspconfig.lua_ls.setup {
   }
 }
 
+local schemas = require('schemastore').yaml.schemas()
+-- schemas['kubernetes'] = { 'k8s**.yaml', 'kube*/*.yaml' }
+-- schemas['docker-compose'] = { "docker-compose.yml", "container-compose.yml"}
+
 lspconfig.yamlls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
-  filetypes = { "yaml", "!yaml.ansible" },
+  filetypes = { "yaml*", "!yaml.ansible" },
   settings = {
     yaml = {
-      schemas = {
-        ["https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/main/service-schema.json"] = {
-          "*-tmpl.yaml",
-          "azure-pipelines.yml"
-        },
+      schemaStore = {
+        enable = false,
+        url = "",
       },
+      schemas = schemas
     },
   }
 }
