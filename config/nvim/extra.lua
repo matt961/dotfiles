@@ -216,20 +216,25 @@ lspconfig.lua_ls.setup {
 }
 
 local schemas = require('schemastore').yaml.schemas()
--- schemas['kubernetes'] = { 'k8s**.yaml', 'kube*/*.yaml' }
--- schemas['docker-compose'] = { "docker-compose.yml", "container-compose.yml"}
+
+-- add extra filepaths here
+for k, v in pairs(schemas) do
+  if vim.tbl_contains(v, "azure-pipelines.yml") then
+    vim.list_extend(schemas[k], {"*azure-pipelines.yml"})
+  end
+end
 
 lspconfig.yamlls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
-  filetypes = { "yaml*", "!yaml.ansible" },
   settings = {
     yaml = {
       schemaStore = {
         enable = false,
         url = "",
       },
-      schemas = schemas
+      schemas = schemas,
+      validate = { enabled = true }
     },
   }
 }
