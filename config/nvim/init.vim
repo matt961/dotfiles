@@ -41,6 +41,7 @@ Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'b0o/schemastore.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.x' }
+Plug 'mrcjkb/rustaceanvim'
 " END PLUGINS
 call plug#end()
 
@@ -60,7 +61,7 @@ set shortmess+=c
 set signcolumn=yes
 
 if exists('g:neovide')
-	set guifont=Source\ Code\ Pro\ Medium:h10
+	set guifont=GitLab\ Mono\ Medium:h10
   let g:neovide_cursor_animation_length=0.00
   let g:neovide_cursor_trail_length=0.00
   let g:neovide_refresh_rate=100
@@ -73,6 +74,40 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 set termguicolors
+lua <<EOF
+require('kanagawa').setup({
+    compile = false,             -- enable compiling the colorscheme
+    undercurl = true,            -- enable undercurls
+    commentStyle = { italic = false },
+    functionStyle = {},
+    keywordStyle = { italic = false},
+    statementStyle = { bold = true },
+    typeStyle = {},
+    transparent = false,         -- do not set background color
+    dimInactive = false,         -- dim inactive window `:h hl-NormalNC`
+    terminalColors = true,       -- define vim.g.terminal_color_{0,17}
+    colors = {                   -- add/modify theme and palette colors
+        palette = {},
+        theme = {
+          wave = {}, lotus = {}, dragon = {},
+          all = {
+            ui = {
+              bg_gutter = "none",
+            }
+          }
+      },
+    },
+    overrides = function(colors) -- add/modify highlights
+        return {}
+    end,
+    theme = "wave",              -- Load "wave" theme when 'background' option is not set
+    background = {               -- map the value of 'background' option to a theme
+        dark = "wave",           -- try "dragon" !
+        light = "lotus"
+    },
+})
+EOF
+
 colorscheme kanagawa
 set background=dark
 
@@ -83,7 +118,7 @@ hi ALEWarning cterm=undercurl ctermbg=none
 hi Todo ctermfg=154 guifg=#afff00
 
 " airline
-autocmd VimEnter * AirlineTheme base16_classic_dark
+autocmd VimEnter * AirlineTheme zenburn
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_section_a = ""
 let g:airline_section_z = ""
@@ -386,4 +421,8 @@ let g:vsnip_filetypes = {}
 let g:vsnip_filetypes.javascriptreact = ['javascript']
 let g:vsnip_filetypes.typescriptreact = ['typescript']
 
-:luafile ~/.config/nvim/extra.lua
+lua <<EOF
+local cfgdir = vim.fn.stdpath('config')
+local extralua = vim.fs.normalize(cfgdir .. "/extra.lua")
+vim.cmd{cmd = 'luafile', args = {extralua}}
+EOF

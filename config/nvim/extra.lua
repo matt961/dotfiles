@@ -150,7 +150,7 @@ local on_attach = function(client, bufnr)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.format({async==true})<CR>', opts)
 end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
@@ -167,7 +167,7 @@ mason_lspconfig.setup({
   automatic_installation = true
 })
 
-local servers = { "rust_analyzer", "tsserver", "solargraph", "terraformls",
+local servers = { "tsserver", "solargraph", "terraformls",
   "omnisharp", "taplo", "jsonls", "jdtls", "gradle_ls", "volar", "cssls", "html", "tailwindcss" }
 for _, lsp in pairs(servers) do
   lspconfig[lsp].setup {
@@ -271,5 +271,11 @@ lspconfig.ansiblels.setup {
         }
       }
     }
+  }
+}
+
+vim.g.rustaceanvim = {
+  server = {
+    on_attach = on_attach
   }
 }
