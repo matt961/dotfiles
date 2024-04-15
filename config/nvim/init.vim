@@ -40,7 +40,7 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': 
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'b0o/schemastore.nvim'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.x' }
+Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
 Plug 'mrcjkb/rustaceanvim'
 " END PLUGINS
 call plug#end()
