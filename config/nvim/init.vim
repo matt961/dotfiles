@@ -155,6 +155,8 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 let g:autofmt_autosave = 1
 
 " ALE stuff
+let g:ale_disable_lsp = 1
+let g:ale_linters_explicit = 1
 let g:ale_lint_delay = 1000
 
 let g:ale_fixers = {'python': ['autopep8'], 'rust': ['rustfix'], 'javascript': ['eslint'], 'yaml': ['yamlfix']}

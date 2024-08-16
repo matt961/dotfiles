@@ -222,6 +222,10 @@ for k, v in pairs(schemas) do
   if vim.tbl_contains(v, "azure-pipelines.yml") then
     vim.list_extend(schemas[k], {"*azure-pipelines.yml"})
   end
+
+  if vim.tbl_contains(v, "docker-compose.yml") then
+    vim.list_extend(schemas[k], {"*.docker-compose.yml"})
+  end
 end
 
 lspconfig.yamlls.setup {
