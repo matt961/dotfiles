@@ -197,7 +197,12 @@ end
 lspconfig.solargraph.setup {
   on_attach = on_attach,
   capabilities = capabilities,
-  root_dir = ruby_root_dir
+  root_dir = ruby_root_dir,
+  settings = {
+    solargraph = {
+      commandPath = "/home/mattc/.gem/ruby/3.1.6/bin/solargraph"
+    }
+  }
 }
 
 lspconfig.lua_ls.setup {
@@ -280,6 +285,14 @@ lspconfig.ansiblels.setup {
         }
       }
     }
+  }
+}
+
+lspconfig.powershell_es.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  settings = {
+    shell = "pwsh"
   }
 }
 

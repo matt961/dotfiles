@@ -59,6 +59,7 @@ set cmdheight=2
 set updatetime=300
 set shortmess+=c
 set signcolumn=yes
+set title
 
 if exists('g:neovide')
 	set guifont=GitLab\ Mono\ Medium:h10
