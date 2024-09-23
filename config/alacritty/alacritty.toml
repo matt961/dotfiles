@@ -1,0 +1,17 @@
+live_config_reload = true
+import = [
+	"~/.config/alacritty/themes/themes/kanagawa_wave.toml"
+]
+
+[window]
+dynamic_title = true
+
+
+[shell]
+program = "/bin/bash"
+args = ["-l"]
+
+[font]
+normal = { family = "IBM Plex Mono", style = "Medium" }
+size = 10
+offset.y = 0
