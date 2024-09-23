@@ -1,0 +1,44 @@
+[user]
+	email = matthew.cocar@eservicecorp.ca
+
+[core]
+	pager = delta
+
+[delta]
+	# features = side-by-side line-numbers decorations
+	features = line-numbers side-by-side decorations
+	whitespace-error-style = 22 reverse
+
+	syntax-theme = gruvbox
+
+[delta "decorations"]
+	commit-style = bold brightyellow
+	commit-decoration-style = brightyellow box
+
+	file-style = brightblue bold ul
+	file-decoration-style = brightblue
+
+	hunk-header-style = italic brightblack ul
+	hunk-header-decoration-style = omit
+
+	line-numbers-zero-style = brightblack
+	line-numbers-minus-style = red
+	line-numbers-plus-style = green
+	line-numbers-left-format = "{nm:^4}"
+	line-numbers-right-format = "{np:^4}"
+
+[interactive]
+	diffFilter = delta --color-only
+
+# define command which will be used when "nvim" is set as a merge tool
+[mergetool "nvim"]
+	cmd = nvim -d -O \"$LOCAL\" \"$BASE\" \"$REMOTE\" \"$MERGED\"
+# set "nvim" as tool for merging
+[merge]
+	tool = nvim
+	conflictstyle = diff3
+# automatically launch merge tool without displaying a prompt
+[mergetool]
+	prompt = false
+[rerere]
+	enabled = true
