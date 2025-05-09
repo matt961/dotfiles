@@ -65,6 +65,7 @@ cmp.setup({
   sources = cmp.config.sources({
     { name = 'nvim_lsp' },
     { name = 'vsnip' }, -- For vsnip users.
+    { name = 'nvim_lsp_signature_help' }
   }
   -- {{ name = 'buffer' },}
   )
@@ -167,8 +168,19 @@ mason_lspconfig.setup({
   automatic_installation = true
 })
 
-local servers = { "tsserver", "solargraph", "terraformls",
-  "omnisharp", "taplo", "jsonls", "jdtls", "gradle_ls", "volar", "cssls", "html", "tailwindcss" }
+local servers = {
+  "tsserver",
+  "solargraph",
+  "terraformls",
+  "taplo",
+  "jsonls",
+  "gradle_ls",
+  "volar",
+  "cssls",
+  "html",
+  "tailwindcss",
+  "csharp_ls"
+}
 for _, lsp in pairs(servers) do
   lspconfig[lsp].setup {
     on_attach = on_attach,
@@ -186,7 +198,7 @@ local root_files = {
 
 local fallback_root_files = {
   'Gemfile', -- Gradle
-  '.git/', -- Gradle
+  '.git/',   -- Gradle
 }
 local ruby_root_dir = function(fname)
   local primary = lspconfig.util.root_pattern(unpack(root_files))(fname)
@@ -225,12 +237,25 @@ local schemas = require('schemastore').yaml.schemas()
 -- add extra filepaths here
 for k, v in pairs(schemas) do
   if vim.tbl_contains(v, "azure-pipelines.yml") then
-    vim.list_extend(schemas[k], {"*azure-pipelines.yml"})
+    vim.list_extend(schemas[k], { "*azure-pipelines.yml" })
   end
 
   if vim.tbl_contains(v, "docker-compose.yml") then
-    vim.list_extend(schemas[k], {"*.docker-compose.yml"})
+    vim.list_extend(schemas[k], { "*.docker-compose.yml" })
   end
+end
+
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
 end
 
 lspconfig.yamlls.setup {
@@ -293,6 +318,32 @@ lspconfig.powershell_es.setup {
   capabilities = capabilities,
   settings = {
     shell = "pwsh"
+  }
+}
+
+lspconfig.jdtls.setup {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  init_options = {
+    settings = {
+      java = {
+        implementationsCodeLens = { enabled = true },
+        imports = { -- <- this
+          gradle = {
+            enabled = true,
+            wrapper = {
+              enabled = true,
+              checksums = {
+                {
+                  sha256 = 'ea56e345f98b3bf206ab15b9210443a8bd9cf35ec7f375686a74e0c54475cecf',
+                  allowed = true
+                }
+              },
+            }
+          }
+        },
+      },
+    }
   }
 }
 
