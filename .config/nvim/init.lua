@@ -47,12 +47,20 @@ require("lazy").setup({
   "mason-org/mason-lspconfig.nvim",
   {
     "iamcco/markdown-preview.nvim",
-    build = function() vim.fn["mkdp#util#install"]() end,
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
     ft = { "markdown" },
+    build = function() vim.fn["mkdp#util#install"]() end,
   },
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+  },
+  "seblyng/roslyn.nvim",
+  ft = "cs",
+  ---@module 'roslyn.config'
+  ---@type RoslynNvimConfig
+  opts = {
+    -- your configuration comes here; leave empty for default settings
   },
   "b0o/schemastore.nvim",
   "nvim-lua/plenary.nvim",
@@ -317,7 +325,15 @@ vim.keymap.set('n', '<leader>qf', builtin.quickfix, {})
 vim.keymap.set('n', '<leader>l', builtin.loclist, {})
 vim.keymap.set('n', '<leader>r', builtin.lsp_references, {})
 
-require("mason").setup()
+require("mason").setup({
+  registries = {
+    "github:mason-org/mason-registry",
+    -- for roslyn lsp
+    "github:Crashdummyy/mason-registry",
+  },
+})
+
+local mason_registry = require("mason-registry")
 
 local cmp = require 'cmp'
 
@@ -490,7 +506,6 @@ local servers = {
   "cssls",
   "html",
   "tailwindcss",
-  "csharp_ls"
 }
 
 for _, lsp in pairs(servers) do
@@ -654,9 +669,39 @@ for k, _ in pairs(vim.lsp.config['_configs']) do
 end
 
 vim.lsp.config('rust-analyzer', {
-    on_attach = on_attach,
-    capabilities = capabilities
+  on_attach = on_attach,
+  capabilities = capabilities
 })
+
+if not mason_registry.is_installed("roslyn") then
+  vim.notify("roslyn not installed, installing now...", vim.log.levels.WARN)
+  local pkg = mason_registry.get_package("roslyn")
+  pkg:install()
+  vim.notify("...roslyn installed.", vim.log.levels.WARN)
+end
+
+vim.lsp.config("roslyn", {
+  on_attach = on_attach,
+  capabilities = capabilities,
+  settings = {
+    ["csharp|inlay_hints"] = {
+      csharp_enable_inlay_hints_for_implicit_object_creation = true,
+      csharp_enable_inlay_hints_for_implicit_variable_types = true,
+    },
+    ["csharp|code_lens"] = {
+      dotnet_enable_references_code_lens = true,
+    },
+    ["csharp|completion"] = {
+      dotnet_show_completion_items_from_unimported_namespaces = true,
+      dotnet_show_name_completion_suggestions = true
+    },
+    ["csharp|formatting"] = {
+      dotnet_organize_imports_on_format = true
+    }
+  },
+})
+
+vim.lsp.enable('roslyn')
 
 local mason_lspconfig = require("mason-lspconfig")
 mason_lspconfig.setup {
