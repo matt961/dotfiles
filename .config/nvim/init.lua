@@ -27,10 +27,10 @@ require("lazy").setup({
   "sheerun/vim-polyglot",
   "preservim/nerdtree",
   {
-    "junegunn/fzf",
-    build = function() vim.fn['fzf#install']() end,
+    "ibhagwan/fzf-lua",
+    -- enable `sk` support instead of the default `fzf`
+    opts = { 'skim' }
   },
-  "junegunn/fzf.vim",
   "neovim/nvim-lspconfig",
   "hrsh7th/cmp-nvim-lsp",
   "hrsh7th/cmp-buffer",
