@@ -37,10 +37,12 @@ require("lazy").setup({
   "hrsh7th/cmp-path",
   "hrsh7th/cmp-cmdline",
   "hrsh7th/nvim-cmp",
+  -- "zjp-CN/nvim-cmp-lsp-rs",
   "hrsh7th/cmp-vsnip",
   "hrsh7th/vim-vsnip",
   "hrsh7th/vim-vsnip-integ",
   "hrsh7th/cmp-nvim-lsp-signature-help",
+  "onsails/lspkind.nvim",
   "yssl/QFEnter",
   "morhetz/gruvbox",
   "mason-org/mason.nvim",
@@ -345,8 +347,15 @@ cmp.setup({
     end,
   },
   window = {
-    -- completion = cmp.config.window.bordered(),
-    -- documentation = cmp.config.window.bordered(),
+    completion = cmp.config.window.bordered({
+      scrollbar = true,
+      side_padding = 2,
+      col_offset = 4
+    }),
+    documentation = cmp.config.window.bordered({
+      max_width = 20,
+      max_height = 10
+    })
   },
   mapping = cmp.mapping.preset.insert({
     -- ['<S-Tab>'] = cmp.mapping.scroll_docs(-4),
@@ -375,41 +384,62 @@ cmp.setup({
     ['<C-e>'] = cmp.mapping.abort(),
     ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
   }),
-  sources = cmp.config.sources({
-    { name = 'nvim_lsp' },
-    { name = 'vsnip' }, -- For vsnip users.
-    { name = 'nvim_lsp_signature_help' }
-  }
-  -- {{ name = 'buffer' },}
-  )
+  sources = cmp.config.sources(
+    { { name = 'nvim_lsp' } },
+    { { name = 'nvim_lsp_signature_help' } },
+    -- { { name = 'vsnip' } }, -- For vsnip users.
+    { { name = 'buffer' }, }
+  ),
+  view = {
+    entries = { follow_cursor = true }
+  },
+  formatting = {
+    format = require('lspkind').cmp_format({
+      mode = "symbol_text",
+      maxwidth = {
+        -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+        -- can also be a function to dynamically calculate max width such as
+        -- menu = function() return math.floor(0.45 * vim.o.columns) end,
+        menu = function() return math.floor(0.30 * vim.o.columns) end,              -- leading text (labelDetails)
+        abbr = function() return math.floor(0.10 * vim.o.columns) end,              -- actual suggestion item
+      },
+      ellipsis_char = '...',    -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
+      show_labelDetails = true, -- show labelDetails in menu. Disabled by default
+      menu = ({
+        nvim_lsp = "[LSP]",
+        buffer = "[Buffer]",
+        vsnip = "[vsnip]",
+        nvim_lua = "[Lua]",
+        latex_symbols = "[Latex]",
+      })
+    }),
+  },
 })
 
 -- Set configuration for specific filetype.
 cmp.setup.filetype('gitcommit', {
-  --      {
-  --    { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
-  --  }
   sources = cmp.config.sources({
     { name = 'buffer' },
   })
 })
 
 -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline('/', {
+cmp.setup.cmdline({ '/', '?' }, {
   mapping = cmp.mapping.preset.cmdline(),
   sources = {
-    { name = 'buffer' }
+    { { name = 'nvim_lsp_document_symbol' } },
+    { { name = 'buffer' } }
   }
 })
 
 -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
 cmp.setup.cmdline(':', {
   mapping = cmp.mapping.preset.cmdline(),
-  sources = cmp.config.sources({
-    { name = 'path' }
-  }, {
-    { name = 'cmdline' }
-  })
+  sources = cmp.config.sources(
+    { { name = 'path' } },
+    { { name = 'cmdline' } }
+  ),
+  matching = { disallow_symbol_nonprefix_matching = false }
 })
 
 -- Mappings.
@@ -506,6 +536,8 @@ local servers = {
   "cssls",
   "html",
   "tailwindcss",
+  "docker_compose_language_service",
+  "dockerls"
 }
 
 for _, lsp in pairs(servers) do
