@@ -56,19 +56,64 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    config = function()
+      local ts = require('nvim-treesitter.configs').setup {
+        auto_install = true,
+      }
+    end
   },
-  "seblyng/roslyn.nvim",
-  ft = "cs",
-  ---@module 'roslyn.config'
-  ---@type RoslynNvimConfig
-  opts = {
-    -- your configuration comes here; leave empty for default settings
+  {
+    "seblyng/roslyn.nvim",
+    ft = "cs",
+    ---@module 'roslyn.config'
+    ---@type RoslynNvimConfig
+    opts = {
+      -- your configuration comes here; leave empty for default settings
+    }
   },
   "b0o/schemastore.nvim",
   "nvim-lua/plenary.nvim",
   { "nvim-telescope/telescope.nvim", branch = "0.1.x" },
   "mrcjkb/rustaceanvim",
   -- END PLUGINS
+  {
+    'Bekaboo/dropbar.nvim',
+    -- optional, but required for fuzzy finder support
+    dependencies = {
+      {
+        'nvim-telescope/telescope-fzf-native.nvim',
+        build = 'make'
+      },
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      local api = require('dropbar.api')
+      local utils = require('dropbar.utils')
+      vim.keymap.set('n', '<Leader>;', api.pick, { desc = 'Pick symbols in winbar' })
+      vim.keymap.set('n', '[;', api.goto_context_start, { desc = 'Go to start of current context' })
+      vim.keymap.set('n', '];', api.select_next_context, { desc = 'Select next context' })
+      require('dropbar').setup {
+        fzf = {
+          keymaps = {
+            ['<C-p>'] = api.fuzzy_find_prev,
+            ['<C-n>'] = api.fuzzy_find_next,
+            ['<CR>'] = api.fuzzy_find_click,
+            ['<S-Enter>'] = function()
+              api.fuzzy_find_click(-1)
+            end,
+          }
+        }
+      }
+    end
+  },
+  {
+    "nvim-tree/nvim-web-devicons",
+    config = function()
+      require('nvim-web-devicons').setup {
+        default = true
+      }
+    end
+  },
 })
 
 -- Options
@@ -82,6 +127,8 @@ vim.opt.shortmess:append("c")
 vim.opt.signcolumn = "yes"
 vim.opt.title = true
 vim.opt.foldmethod = "syntax"
+vim.wo.foldmethod = 'expr'
+vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.opt.foldlevelstart = 20
 vim.opt.number = true
 vim.opt.expandtab = false
@@ -400,11 +447,11 @@ cmp.setup({
         -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
         -- can also be a function to dynamically calculate max width such as
         -- menu = function() return math.floor(0.45 * vim.o.columns) end,
-        menu = function() return math.floor(0.30 * vim.o.columns) end,              -- leading text (labelDetails)
-        abbr = function() return math.floor(0.10 * vim.o.columns) end,              -- actual suggestion item
+        menu = function() return math.floor(0.30 * vim.o.columns) end, -- leading text (labelDetails)
+        abbr = function() return math.floor(0.10 * vim.o.columns) end, -- actual suggestion item
       },
-      ellipsis_char = '...',    -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
-      show_labelDetails = true, -- show labelDetails in menu. Disabled by default
+      ellipsis_char = '...',                                           -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
+      show_labelDetails = true,                                        -- show labelDetails in menu. Disabled by default
       menu = ({
         nvim_lsp = "[LSP]",
         buffer = "[Buffer]",

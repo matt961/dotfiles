@@ -15,3 +15,22 @@ args = ["-l"]
 normal = { family = "IBM Plex Mono", style = "Medium" }
 size = 10
 offset.y = 0
+
+# [window]
+# dynamic_title = true
+
+# [font]
+
+# normal = { family = "SauceCodePro Nerd Font", style = "SemiBold" }
+# size = 11
+# # offset.y = 1
+
+
+# [general]
+# live_config_reload = true
+# import = [
+# 	"~/.config/alacritty/themes/kanagawa_wave.toml"
+# ]
+
+# [terminal]
+
