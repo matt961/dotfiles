@@ -574,7 +574,6 @@ local lspconfig = require('lspconfig')
 
 local servers = {
   "ts_ls",
-  "solargraph",
   "terraformls",
   "taplo",
   "jsonls",
@@ -600,19 +599,23 @@ local fallback_root_files = {
   '.git/',   -- Gradle
 }
 
-local ruby_root_dir = function(fname)
-  local primary = lspconfig.util.root_pattern(unpack(root_files))(fname)
-  local fallback = lspconfig.util.root_pattern(unpack(fallback_root_files))(fname)
-  return primary or fallback
+local ruby_root_dir = function(bufnr, on_dir)
+  local primary = vim.fs.root(0, root_files)
+  local fallback = vim.fs.root(0, fallback_root_files)
+  if primary then
+    on_dir(primary)
+    return
+  elseif fallback then
+    on_dir(fallback)
+    return
+  end
 end
 
-vim.lsp.config("solargraph", {
-  root_dir = ruby_root_dir,
-  settings = {
-    solargraph = {
-      commandPath = "/home/mattc/.gem/ruby/3.1.6/bin/solargraph"
-    }
-  }
+vim.lsp.config('solargraph', {
+  root_dir = ruby_root_dir
+})
+vim.lsp.enable("solargraph", {
+  root_dir = ruby_root_dir
 })
 
 vim.lsp.config("lua_ls", {
