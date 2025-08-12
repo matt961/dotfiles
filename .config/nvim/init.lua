@@ -118,17 +118,16 @@ require("lazy").setup({
   {
     "seblyng/roslyn.nvim",
     ft = "cs",
-    ---@module 'roslyn.config'
-    ---@type RoslynNvimConfig
-    opts = {
-      -- your configuration comes here; leave empty for default settings
-    }
+    -----@module 'roslyn.config'
+    -----@type RoslynNvimConfig
+    --opts = {
+    --  -- your configuration comes here; leave empty for default settings
+    --}
   },
   "b0o/schemastore.nvim",
   "nvim-lua/plenary.nvim",
   { "nvim-telescope/telescope.nvim", branch = "0.1.x" },
   "mrcjkb/rustaceanvim",
-  -- END PLUGINS
   {
     'Bekaboo/dropbar.nvim',
     -- optional, but required for fuzzy finder support
@@ -168,6 +167,7 @@ require("lazy").setup({
     end
   },
 })
+-- END PLUGINS
 
 -- Options
 vim.opt.encoding = "utf-8"
