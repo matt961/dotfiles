@@ -32,16 +32,69 @@ require("lazy").setup({
     opts = { 'skim' }
   },
   "neovim/nvim-lspconfig",
-  "hrsh7th/cmp-nvim-lsp",
-  "hrsh7th/cmp-buffer",
-  "hrsh7th/cmp-path",
-  "hrsh7th/cmp-cmdline",
-  "hrsh7th/nvim-cmp",
-  -- "zjp-CN/nvim-cmp-lsp-rs",
-  "hrsh7th/cmp-vsnip",
-  "hrsh7th/vim-vsnip",
-  "hrsh7th/vim-vsnip-integ",
-  "hrsh7th/cmp-nvim-lsp-signature-help",
+  -- "hrsh7th/cmp-nvim-lsp",
+  -- "hrsh7th/cmp-buffer",
+  -- "hrsh7th/cmp-path",
+  -- "hrsh7th/cmp-cmdline",
+  -- "hrsh7th/nvim-cmp",
+  -- -- "zjp-CN/nvim-cmp-lsp-rs",
+  -- "hrsh7th/cmp-vsnip",
+  -- "hrsh7th/vim-vsnip",
+  -- "hrsh7th/vim-vsnip-integ",
+  -- "hrsh7th/cmp-nvim-lsp-signature-help",
+  {
+    'saghen/blink.cmp',
+    -- optional: provides snippets for the snippet source
+    dependencies = { 'rafamadriz/friendly-snippets' },
+
+    -- use a release tag to download pre-built binaries
+    version = '1.*',
+    -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
+    -- build = 'cargo build --release',
+    -- If you use nix, you can build from source using latest nightly rust with:
+    -- build = 'nix run .#build-plugin',
+
+    ---@module 'blink.cmp'
+    ---@type blink.cmp.Config
+    opts = {
+      -- 'default' (recommended) for mappings similar to built-in completions (C-y to accept)
+      -- 'super-tab' for mappings similar to vscode (tab to accept)
+      -- 'enter' for enter to accept
+      -- 'none' for no mappings
+      --
+      -- All presets have the following mappings:
+      -- C-space: Open menu or open docs if already open
+      -- C-n/C-p or Up/Down: Select next/previous item
+      -- C-e: Hide menu
+      -- C-k: Toggle signature help (if signature.enabled = true)
+      --
+      -- See :h blink-cmp-config-keymap for defining your own keymap
+      keymap = { preset = 'super-tab' },
+
+      appearance = {
+        -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+        -- Adjusts spacing to ensure icons are aligned
+        nerd_font_variant = 'mono'
+      },
+
+      -- (Default) Only show the documentation popup when manually triggered
+      completion = { documentation = { auto_show = false } },
+
+      -- Default list of enabled providers defined so that you can extend it
+      -- elsewhere in your config, without redefining it, due to `opts_extend`
+      sources = {
+        default = { 'lsp', 'path', 'snippets', 'buffer' },
+      },
+
+      -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
+      -- You may use a lua implementation instead by using `implementation = "lua"` or fallback to the lua implementation,
+      -- when the Rust fuzzy matcher is not available, by using `implementation = "prefer_rust"`
+      --
+      -- See the fuzzy documentation for more information
+      fuzzy = { implementation = "prefer_rust_with_warning" }
+    },
+    opts_extend = { "sources.default" }
+  },
   "onsails/lspkind.nvim",
   "yssl/QFEnter",
   "morhetz/gruvbox",
@@ -330,20 +383,20 @@ vim.keymap.set("n", "<F10>", function()
 end, { noremap = true, silent = true })
 
 -- Vsnip mappings for snippet expansion/jumping
-vim.keymap.set({ "i", "s" }, "<C-j>", function()
-  return vim.fn["vsnip#expandable"]() == 1 and "<Plug>(vsnip-expand)" or "<C-j>"
-end, { expr = true, noremap = true })
-vim.keymap.set({ "i", "s" }, "<C-l>", function()
-  return vim.fn == 1 and "<Plug>(vsnip-expand-or-jump)" or "<C-l>"
-end, { expr = true, noremap = true })
-vim.keymap.set({ "i", "s" }, "<Tab>", function()
-  return vim.fn == 1 and "<Plug>(vsnip-jump-next)" or "<Tab>"
-end, { expr = true, noremap = true })
-vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
-  return vim.fn["vsnip#jumpable"](-1) == 1 and "<Plug>(vsnip-jump-prev)" or "<S-Tab>"
-end, { expr = true, noremap = true })
-vim.keymap.set({ "n", "x" }, "s", "<Plug>(vsnip-select-text)", { noremap = false })
-vim.keymap.set({ "n", "x" }, "S", "<Plug>(vsnip-cut-text)", { noremap = false })
+-- vim.keymap.set({ "i", "s" }, "<C-j>", function()
+--   return vim.fn["vsnip#expandable"]() == 1 and "<Plug>(vsnip-expand)" or "<C-j>"
+-- end, { expr = true, noremap = true })
+-- vim.keymap.set({ "i", "s" }, "<C-l>", function()
+--   return vim.fn == 1 and "<Plug>(vsnip-expand-or-jump)" or "<C-l>"
+-- end, { expr = true, noremap = true })
+-- vim.keymap.set({ "i", "s" }, "<Tab>", function()
+--   return vim.fn == 1 and "<Plug>(vsnip-jump-next)" or "<Tab>"
+-- end, { expr = true, noremap = true })
+-- vim.keymap.set({ "i", "s" }, "<S-Tab>", function()
+--   return vim.fn["vsnip#jumpable"](-1) == 1 and "<Plug>(vsnip-jump-prev)" or "<S-Tab>"
+-- end, { expr = true, noremap = true })
+-- vim.keymap.set({ "n", "x" }, "s", "<Plug>(vsnip-select-text)", { noremap = false })
+-- vim.keymap.set({ "n", "x" }, "S", "<Plug>(vsnip-cut-text)", { noremap = false })
 
 -- Vsnip filetypes mappings
 vim.g.vsnip_filetypes = {
@@ -384,110 +437,110 @@ require("mason").setup({
 
 local mason_registry = require("mason-registry")
 
-local cmp = require 'cmp'
+-- local cmp = require 'cmp'
 
-cmp.setup({
-  snippet = {
-    -- REQUIRED - you must specify a snippet engine
-    expand = function(args)
-      vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-    end,
-  },
-  window = {
-    completion = cmp.config.window.bordered({
-      scrollbar = true,
-      side_padding = 2,
-      col_offset = 4
-    }),
-    documentation = cmp.config.window.bordered({
-      max_width = 20,
-      max_height = 10
-    })
-  },
-  mapping = cmp.mapping.preset.insert({
-    -- ['<S-Tab>'] = cmp.mapping.scroll_docs(-4),
-    -- ['<Tab>'] = cmp.mapping.scroll_docs(4),
-    ["<Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif vim.fn["vsnip#available"](1) == 1 then
-        feedkey("<Plug>(vsnip-expand-or-jump)", "")
-      elseif has_words_before() then
-        cmp.complete()
-      else
-        fallback() -- The fallback function sends a already mapped key. In this case, it's probably `<Tab>`.
-      end
-    end, { "i", "s" }),
+-- cmp.setup({
+--   snippet = {
+--     -- REQUIRED - you must specify a snippet engine
+--     expand = function(args)
+--       vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+--     end,
+--   },
+--   window = {
+--     completion = cmp.config.window.bordered({
+--       scrollbar = true,
+--       side_padding = 2,
+--       col_offset = 4
+--     }),
+--     documentation = cmp.config.window.bordered({
+--       max_width = 20,
+--       max_height = 10
+--     })
+--   },
+--   mapping = cmp.mapping.preset.insert({
+--     -- ['<S-Tab>'] = cmp.mapping.scroll_docs(-4),
+--     -- ['<Tab>'] = cmp.mapping.scroll_docs(4),
+--     ["<Tab>"] = cmp.mapping(function(fallback)
+--       if cmp.visible() then
+--         cmp.select_next_item()
+--       elseif vim.fn["vsnip#available"](1) == 1 then
+--         feedkey("<Plug>(vsnip-expand-or-jump)", "")
+--       elseif has_words_before() then
+--         cmp.complete()
+--       else
+--         fallback() -- The fallback function sends a already mapped key. In this case, it's probably `<Tab>`.
+--       end
+--     end, { "i", "s" }),
 
-    ["<S-Tab>"] = cmp.mapping(function()
-      if cmp.visible() then
-        cmp.select_prev_item()
-      elseif vim.fn["vsnip#jumpable"](-1) == 1 then
-        feedkey("<Plug>(vsnip-jump-prev)", "")
-      end
-    end, { "i", "s" }),
+--     ["<S-Tab>"] = cmp.mapping(function()
+--       if cmp.visible() then
+--         cmp.select_prev_item()
+--       elseif vim.fn["vsnip#jumpable"](-1) == 1 then
+--         feedkey("<Plug>(vsnip-jump-prev)", "")
+--       end
+--     end, { "i", "s" }),
 
-    ['<C-Space>'] = cmp.mapping.complete(),
-    ['<C-e>'] = cmp.mapping.abort(),
-    ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-  }),
-  sources = cmp.config.sources(
-    { { name = 'nvim_lsp' } },
-    { { name = 'nvim_lsp_signature_help' } },
-    -- { { name = 'vsnip' } }, -- For vsnip users.
-    { { name = 'buffer' }, }
-  ),
-  view = {
-    entries = { follow_cursor = true }
-  },
-  formatting = {
-    format = require('lspkind').cmp_format({
-      mode = "symbol_text",
-      maxwidth = {
-        -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
-        -- can also be a function to dynamically calculate max width such as
-        -- menu = function() return math.floor(0.45 * vim.o.columns) end,
-        menu = function() return math.floor(0.30 * vim.o.columns) end, -- leading text (labelDetails)
-        abbr = function() return math.floor(0.10 * vim.o.columns) end, -- actual suggestion item
-      },
-      ellipsis_char = '...',                                           -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
-      show_labelDetails = true,                                        -- show labelDetails in menu. Disabled by default
-      menu = ({
-        nvim_lsp = "[LSP]",
-        buffer = "[Buffer]",
-        vsnip = "[vsnip]",
-        nvim_lua = "[Lua]",
-        latex_symbols = "[Latex]",
-      })
-    }),
-  },
-})
+--     ['<C-Space>'] = cmp.mapping.complete(),
+--     ['<C-e>'] = cmp.mapping.abort(),
+--     ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+--   }),
+--   sources = cmp.config.sources(
+--     { { name = 'nvim_lsp' } },
+--     { { name = 'nvim_lsp_signature_help' } },
+--     -- { { name = 'vsnip' } }, -- For vsnip users.
+--     { { name = 'buffer' }, }
+--   ),
+--   view = {
+--     entries = { follow_cursor = true }
+--   },
+--   formatting = {
+--     format = require('lspkind').cmp_format({
+--       mode = "symbol_text",
+--       maxwidth = {
+--         -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
+--         -- can also be a function to dynamically calculate max width such as
+--         -- menu = function() return math.floor(0.45 * vim.o.columns) end,
+--         menu = function() return math.floor(0.30 * vim.o.columns) end, -- leading text (labelDetails)
+--         abbr = function() return math.floor(0.10 * vim.o.columns) end, -- actual suggestion item
+--       },
+--       ellipsis_char = '...',                                           -- when popup menu exceed maxwidth, the truncated part would show ellipsis_char instead (must define maxwidth first)
+--       show_labelDetails = true,                                        -- show labelDetails in menu. Disabled by default
+--       menu = ({
+--         nvim_lsp = "[LSP]",
+--         buffer = "[Buffer]",
+--         vsnip = "[vsnip]",
+--         nvim_lua = "[Lua]",
+--         latex_symbols = "[Latex]",
+--       })
+--     }),
+--   },
+-- })
 
--- Set configuration for specific filetype.
-cmp.setup.filetype('gitcommit', {
-  sources = cmp.config.sources({
-    { name = 'buffer' },
-  })
-})
+-- -- Set configuration for specific filetype.
+-- cmp.setup.filetype('gitcommit', {
+--   sources = cmp.config.sources({
+--     { name = 'buffer' },
+--   })
+-- })
 
--- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline({ '/', '?' }, {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = {
-    { { name = 'nvim_lsp_document_symbol' } },
-    { { name = 'buffer' } }
-  }
-})
+-- -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
+-- cmp.setup.cmdline({ '/', '?' }, {
+--   mapping = cmp.mapping.preset.cmdline(),
+--   sources = {
+--     { { name = 'nvim_lsp_document_symbol' } },
+--     { { name = 'buffer' } }
+--   }
+-- })
 
--- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(':', {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = cmp.config.sources(
-    { { name = 'path' } },
-    { { name = 'cmdline' } }
-  ),
-  matching = { disallow_symbol_nonprefix_matching = false }
-})
+-- -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+-- cmp.setup.cmdline(':', {
+--   mapping = cmp.mapping.preset.cmdline(),
+--   sources = cmp.config.sources(
+--     { { name = 'path' } },
+--     { { name = 'cmdline' } }
+--   ),
+--   matching = { disallow_symbol_nonprefix_matching = false }
+-- })
 
 -- Mappings.
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -568,7 +621,8 @@ end
 -- map buffer local keybindings when the language server attaches
 
 -- Setup lspconfig.
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
+-- local capabilities = require('cmp_nvim_lsp').default_capabilities()
+local capabilities = require('blink.cmp').get_lsp_capabilities()
 
 local lspconfig = require('lspconfig')
 
