@@ -26,12 +26,19 @@ require("lazy").setup({
   "w0rp/ale",
   "sheerun/vim-polyglot",
   "preservim/nerdtree",
+  "skim-rs/skim",
   {
     "ibhagwan/fzf-lua",
     -- enable `sk` support instead of the default `fzf`
-    opts = { 'skim' }
+    opts = { 'skim' },
+    -- config = function()
+    -- require('fzf-lua').setup({ "skim" })
+    -- end,
+    dependencies = { "skim-rs/skim" }
   },
+
   "neovim/nvim-lspconfig",
+
   -- "hrsh7th/cmp-nvim-lsp",
   -- "hrsh7th/cmp-buffer",
   -- "hrsh7th/cmp-path",
@@ -106,15 +113,15 @@ require("lazy").setup({
     ft = { "markdown" },
     build = function() vim.fn["mkdp#util#install"]() end,
   },
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    config = function()
-      local ts = require('nvim-treesitter.configs').setup {
-        auto_install = true,
-      }
-    end
-  },
+  -- {
+  --   "nvim-treesitter/nvim-treesitter",
+  --   build = ":TSUpdate",
+  --   config = function()
+  --     local ts = require('nvim-treesitter.configs').setup {
+  --       auto_install = true,
+  --     }
+  --   end
+  -- },
   {
     "seblyng/roslyn.nvim",
     ft = "cs",
@@ -126,7 +133,8 @@ require("lazy").setup({
   },
   "b0o/schemastore.nvim",
   "nvim-lua/plenary.nvim",
-  { "nvim-telescope/telescope.nvim", branch = "0.1.x" },
+  -- { "nvim-telescope/telescope.nvim", branch = "0.1.x" },
+  "nvim-telescope/telescope.nvim",
   "mrcjkb/rustaceanvim",
   {
     'Bekaboo/dropbar.nvim',
@@ -165,6 +173,31 @@ require("lazy").setup({
         default = true
       }
     end
+  },
+  {
+    "hat0uma/csvview.nvim",
+    ---@module "csvview"
+    ---@type CsvView.Options
+    opts = {
+      parser = { comments = { "#", "//" } },
+      keymaps = {
+        -- Text objects for selecting fields
+        textobject_field_inner = { "if", mode = { "o", "x" } },
+        textobject_field_outer = { "af", mode = { "o", "x" } },
+        -- Excel-like navigation:
+        -- Use <Tab> and <S-Tab> to move horizontally between fields.
+        -- Use <Enter> and <S-Enter> to move vertically between rows and place the cursor at the end of the field.
+        -- Note: In terminals, you may need to enable CSI-u mode to use <S-Tab> and <S-Enter>.
+        jump_next_field_end = { "<Tab>", mode = { "n", "v" } },
+        jump_prev_field_end = { "<S-Tab>", mode = { "n", "v" } },
+        jump_next_row = { "<Enter>", mode = { "n", "v" } },
+        jump_prev_row = { "<S-Enter>", mode = { "n", "v" } },
+      },
+      view = {
+        display_mode = "border",
+      }
+    },
+    cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
   },
 })
 -- END PLUGINS
@@ -624,14 +657,14 @@ end
 -- local capabilities = require('cmp_nvim_lsp').default_capabilities()
 local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-local lspconfig = require('lspconfig')
+-- local lspconfig = require('lspconfig')
 
 local servers = {
   "ts_ls",
   "terraformls",
   "taplo",
   "jsonls",
-  "gradle_ls",
+  -- "gradle_ls",
   "vue_ls",
   "cssls",
   "html",
@@ -724,40 +757,54 @@ vim.lsp.config("yamlls", {
   }
 })
 
-vim.lsp.config("pyright", {
-  root_dir = lspconfig.util.root_pattern('pyproject.toml', 'requirements.txt'),
-  settings = {
-    python = {
-      analysis = {
-        autoSearchPaths = true,
-        diagnosticMode = "workspace",
-        useLibraryCodeForTypes = true
-      }
-    }
-  }
-})
+-- vim.lsp.config("pyright", {
+--   root_dir = lspconfig.util.root_pattern('pyproject.toml', 'requirements.txt'),
+--   settings = {
+--     python = {
+--       analysis = {
+--         autoSearchPaths = true,
+--         diagnosticMode = "workspace",
+--         useLibraryCodeForTypes = true
+--       }
+--     }
+--   }
+-- })
 
-vim.lsp.config("ansiblels", {
-  settings = {
-    ansible = {
-      ansible = {
-        path = "ansible"
-      },
-      executionEnvironment = {
-        enabled = false
-      },
-      python = {
-        interpreterPath = "python"
-      },
-      validation = {
-        enabled = true,
-        lint = {
-          enabled = false,
-          path = "ansible-lint"
-        }
-      }
+vim.lsp.config("basedpyright", {})
+
+vim.filetype.add {
+    pattern = {
+      ["*-playbook.yml"] = "yaml.ansible",
+      ["tasks/*.yml"] = "yaml.ansible",
+      ["meta/argument_specs.yml"] = "yaml.ansible",
+      ["defaults.yml"] = "yaml.ansible",
     }
-  }
+}
+
+-- vim.lsp.config("ansiblels", {})
+vim.lsp.config("ansiblels", {
+  filetypes = { 'yaml.ansible' },
+  root_markers = { "ansible.cfg" }
+  -- settings = {
+  --   ansible = {
+  --     ansible = {
+  --       path = "ansible"
+  --     },
+  --     executionEnvironment = {
+  --       enabled = false
+  --     },
+  --     python = {
+  --       interpreterPath = "python"
+  --     },
+  --     validation = {
+  --       enabled = true,
+  --       lint = {
+  --         enabled = false,
+  --         path = "ansible-lint"
+  --       }
+  --     }
+  --   }
+  -- }
 })
 
 vim.lsp.config("powershell_es", {
@@ -766,29 +813,29 @@ vim.lsp.config("powershell_es", {
   }
 })
 
-vim.lsp.config("jdtls", {
-  init_options = {
-    settings = {
-      java = {
-        implementationsCodeLens = { enabled = true },
-        imports = { -- <- this
-          gradle = {
-            enabled = true,
-            wrapper = {
-              enabled = true,
-              checksums = {
-                {
-                  sha256 = 'ea56e345f98b3bf206ab15b9210443a8bd9cf35ec7f375686a74e0c54475cecf',
-                  allowed = true
-                }
-              },
-            }
-          }
-        },
-      },
-    }
-  }
-})
+-- vim.lsp.config("jdtls", {
+--   init_options = {
+--     settings = {
+--       java = {
+--         implementationsCodeLens = { enabled = true },
+--         imports = { -- <- this
+--           gradle = {
+--             enabled = true,
+--             wrapper = {
+--               enabled = true,
+--               checksums = {
+--                 {
+--                   sha256 = 'ea56e345f98b3bf206ab15b9210443a8bd9cf35ec7f375686a74e0c54475cecf',
+--                   allowed = true
+--                 }
+--               },
+--             }
+--           }
+--         },
+--       },
+--     }
+--   }
+-- })
 
 
 vim.lsp.config("*", {
