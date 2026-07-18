@@ -32,7 +32,7 @@
 
 # define command which will be used when "nvim" is set as a merge tool
 [mergetool "nvim"]
-	cmd = nvim -d -O \"$LOCAL\" \"$BASE\" \"$REMOTE\" \"$MERGED\"
+	cmd = nvim -d -O \"$LOCAL\" \"$BASE\" \"$REMOTE\" -o \"$MERGED\"
 # set "nvim" as tool for merging
 [merge]
 	tool = nvim
